@@ -139,17 +139,17 @@ class OptimizedORTHBlock(chainer.Chain):
             self.c11 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
             self.c12 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
             self.c13 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
-            self.c14 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
+            self.c14 = ORTHConvolution2D(in_channels, out_channels//5 + out_channels%5, ksize=ksize, pad=pad, initialW=initializer)
             self.c2 = ORTHConvolution2D(out_channels, out_channels, ksize=ksize, pad=pad, initialW=initializer)
             self.c_sc = ORTHConvolution2D(in_channels, out_channels, ksize=1, pad=0, initialW=initializer_sc)
 
     def loss_orth(self):
-        loss =  self.c1.loss_orth() + self.c2.loss_orth()
+        loss =  self.c10.loss_orth() + self.c11.loss_orth() + self.c12.loss_orth() + self.c13.loss_orth() + self.c14.loss_orth() + self.c2.loss_orth()
         loss += self.c_sc.loss_orth()
         return loss
 
     def residual(self, x):
-        h = x
+        h = chainer.functions.hstack([self.c10(x),self.c11(x),self.c12(x),self.c13(x),self.c14(x)])
         h = self.c1(h)
         h = self.activation(h)
         h = self.c2(h)
