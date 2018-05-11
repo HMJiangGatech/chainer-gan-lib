@@ -8,6 +8,7 @@ from chainer import initializers
 from chainer import link
 from chainer.links.connection.linear import Linear
 from chainer.functions.array.broadcast import broadcast_to
+import chainer.functions as F
 
 
 class ORTHLinear(Linear):
@@ -74,4 +75,4 @@ class ORTHLinear(Linear):
         return linear.linear(x, self.W_bar, self.b)
 
     def loss_orth(self):
-        return chainer.functions.sum((linear.linear(self.W,self.W) - self.I)**2)
+        return F.sum((F.matmul(self.W,self.W.T) - self.I)**2)

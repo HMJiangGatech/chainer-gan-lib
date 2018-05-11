@@ -10,6 +10,7 @@ from chainer import link
 from chainer.links.connection.convolution_2d import Convolution2D
 from chainer.functions.array.broadcast import broadcast_to
 import common.sn.max_sv as max_sv
+import chainer.functions as F
 
 
 class ORTHConvolution2D(Convolution2D):
@@ -63,7 +64,7 @@ class ORTHConvolution2D(Convolution2D):
         self.Ip = Ip
         self.u = None
         self.use_gamma = use_gamma
-        self.I = cupy.identity(out_channels)
+        self.out_channels = out_channels
         super(ORTHConvolution2D, self).__init__(
             in_channels, out_channels, ksize, stride, pad,
             nobias, initialW, initial_bias)
@@ -92,7 +93,7 @@ class ORTHConvolution2D(Convolution2D):
 
     def loss_orth(self):
         _W = self.W.reshape(self.W.shape[0], -1)
-        return chainer.functions.sum((chainer.functions.linear(_W,_W) - self.I)**2)
+        return F.sum((F.matmul(_W,_W.T) - cupy.identity(self.out_channels))**2)
 
     def showOrthInfo(self):
         _W = self.W.data

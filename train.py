@@ -48,7 +48,7 @@ def main():
 
     args = parser.parse_args()
     record_setting(args.out)
-    report_keys = ["loss_dis", "loss_gen", "inception_mean", "inception_std", "FID"]
+    report_keys = ["loss_dis", "loss_gen", "inception_mean", "inception_std", "FID", "loss_orth"]
 
     # Set up dataset
     train_dataset = Cifar10Dataset()
