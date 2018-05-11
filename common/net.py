@@ -583,7 +583,7 @@ class SNResnetDiscriminator(chainer.Chain):
 class ORTHResnetDiscriminator(chainer.Chain):
     def __init__(self, bottom_width=8, ch=128, wscale=0.02, output_dim=1):
         w = chainer.initializers.GlorotUniform()
-        super(SNResnetDiscriminator, self).__init__()
+        super(ORTHResnetDiscriminator, self).__init__()
         self.bottom_width = bottom_width
         self.ch = ch
         with self.init_scope():
