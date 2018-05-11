@@ -135,9 +135,9 @@ class UVConvolution2D(link.Link):
         elif self.mode == 6:
             spectral_penalty += F.mean(self.D*F.log(self.D))
         elif self.mode == 7:
-            spectral_penalty += F.mean(torch.exp(self.D))
+            spectral_penalty += F.mean(F.exp(self.D))
         elif self.mode == 8:
-            spectral_penalty += -F.mean(torch.log(self.D))
+            spectral_penalty += -F.mean(F.log(self.D))
 
         return penalty + spectral_penalty*0.1
 
