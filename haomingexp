@@ -26,16 +26,16 @@ python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 8 --o
 
 # Resnet
 
-python train.py --gpu 0 --algorithm stdgan --architecture snresdcgan --out result_ressndcgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
-python train.py --gpu 0 --algorithm orthgan --architecture orthresdcgan --out result_resorthgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+python train.py --gpu 0 --algorithm stdgan --architecture snresdcgan --out result_ressndcgan --n_dis 5 --adam_beta1 0 --adam_beta2 0.9
+python train.py --gpu 0 --algorithm orthgan --architecture orthresdcgan --out result_resorthgan --n_dis 5 --adam_beta1 0 --adam_beta2 0.9
 
 # MODE1 Spectrual Norm
-python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 1 --out result_resuvgan_mode1 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 1 --out result_resuvgan_mode1 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9
 # MODE2 Spectrual Clipping
-python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 2 --out result_resuvgan_mode2 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 2 --out result_resuvgan_mode2 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9
 # MODE3 Lipschitz Reg
-python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 3 --out result_resuvgan_mode3 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 3 --out result_resuvgan_mode3 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9
 # MODE5 SC + Divergence Control
-python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 5 --out result_resuvgan_mode5 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 5 --out result_resuvgan_mode5 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9
 # MODE8 SN + Penalty Control
-python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 8 --out result_resuvgan_mode8 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 8 --out result_resuvgan_mode8 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9

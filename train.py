@@ -71,40 +71,44 @@ def main():
             raise NotImplementedError()
         models = [generator, discriminator]
     elif args.algorithm == "stdgan":
-        from stdgan.updater import Updater
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="dcgan":
+            from stdgan.updater import Updater
             generator = common.net.DCGANGenerator()
             discriminator = common.net.DCGANDiscriminator()
         elif args.architecture=="sndcgan":
+            from stdgan.updater import Updater
             generator = common.net.DCGANGenerator()
             discriminator = common.net.SNDCGANDiscriminator()
         elif args.architecture=="snresdcgan":
+            from stdgan.updater import HingeUpdater as Updater
             generator = common.net.ResnetGenerator(n_hidden=256)
             discriminator = common.net.SNResnetDiscriminator()
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
     elif args.algorithm == "orthgan":
-        from orthgan.updater import Updater
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="orthdcgan":
+            from orthgan.updater import Updater
             generator = common.net.DCGANGenerator()
             discriminator = common.net.ORTHDCGANDiscriminator()
         elif args.architecture=="orthresdcgan":
+            from orthgan.updater import HingeUpdater as Updater
             generator = common.net.ResnetGenerator(n_hidden=256)
             discriminator = common.net.ORTHResnetDiscriminator(args.udvmode)
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
     elif args.algorithm == "uvgan":
-        from uvgan.updater import Updater
         updater_args["n_dis"] = args.n_dis
         updater_args["mode"] = args.udvmode
         if args.architecture=="uvdcgan":
+            from orthgan.updater import Updater
             generator = common.net.DCGANGenerator()
             discriminator = common.net.UVDCGANDiscriminator(args.udvmode)
         elif args.architecture=="uvresdcgan":
+            from orthgan.updater import HingeUpdater as Updater
             generator = common.net.ResnetGenerator(n_hidden=256)
             discriminator = common.net.UVResnetDiscriminator(args.udvmode)
         else:

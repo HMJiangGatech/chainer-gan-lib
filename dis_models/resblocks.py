@@ -135,7 +135,11 @@ class OptimizedORTHBlock(chainer.Chain):
         initializer_sc = chainer.initializers.Orthogonal(1)
         self.activation = activation
         with self.init_scope():
-            self.c1 = ORTHConvolution2D(in_channels, out_channels, ksize=ksize, pad=pad, initialW=initializer)
+            self.c10 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
+            self.c11 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
+            self.c12 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
+            self.c13 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
+            self.c14 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
             self.c2 = ORTHConvolution2D(out_channels, out_channels, ksize=ksize, pad=pad, initialW=initializer)
             self.c_sc = ORTHConvolution2D(in_channels, out_channels, ksize=1, pad=0, initialW=initializer_sc)
 
