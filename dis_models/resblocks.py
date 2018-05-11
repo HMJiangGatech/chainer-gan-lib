@@ -147,7 +147,6 @@ class OptimizedORTHBlock(chainer.Chain):
 
     def loss_orth(self):
         loss =  self.c10.loss_orth() + self.c11.loss_orth() + self.c12.loss_orth() + self.c13.loss_orth() + self.c14.loss_orth() + self.c2.loss_orth()
-        loss += self.c_sc.loss_orth()
         return loss
 
     def residual(self, x):
