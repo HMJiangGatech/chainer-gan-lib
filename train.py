@@ -94,6 +94,7 @@ def main():
     elif args.algorithm == "uvgan":
         from uvgan.updater import Updater
         updater_args["n_dis"] = args.n_dis
+        updater_args["mode"] = args.udvmode
         if args.architecture=="uvdcgan":
             generator = common.net.DCGANGenerator()
             discriminator = common.net.UVDCGANDiscriminator(args.udvmode)

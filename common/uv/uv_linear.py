@@ -1,77 +1,108 @@
 import math
 import numpy as np
+import cupy
 import chainer
 from chainer import cuda
 from chainer.functions.connection import linear
+from chainer import variable
 from chainer import initializers
 from chainer import link
 from chainer.links.connection.linear import Linear
 from chainer.functions.array.broadcast import broadcast_to
-import common.sn.max_sv as max_sv
+import chainer.functions as F
 
 
-class SNLinear(Linear):
-    """Linear layer with Spectral Normalization.
+def _pair(x):
+    if hasattr(x, '__getitem__'):
+        return x
+    return x, x
 
-    Args:
-        in_size (int): Dimension of input vectors. If ``None``, parameter
-            initialization will be deferred until the first forward data pass
-            at which time the size will be determined.
-        out_size (int): Dimension of output vectors.
-        wscale (float): Scaling factor of the weight matrix.
-        bias (float): Initial bias value.
-        nobias (bool): If ``True``, then this function does not use the bias.
-        initialW (2-D array): Initial weight value. If ``None``, then this
-            function uses to initialize ``wscale``.
-            May also be a callable that takes ``numpy.ndarray`` or
-            ``cupy.ndarray`` and edits its value.
-        initial_bias (1-D array): Initial bias value. If ``None``, then this
-            function uses to initialize ``bias``.
-            May also be a callable that takes ``numpy.ndarray`` or
-            ``cupy.ndarray`` and edits its value.
-        use_gamma (bool): If true, apply scalar multiplication to the 
-            normalized weight (i.e. reparameterize).
-        Ip (int): The number of power iteration for calculating the spcetral 
-            norm of the weights. 
-    .. seealso:: :func:`~chainer.functions.linear`
-
-    Attributes:
-        W (~chainer.Variable): Weight parameter.
-        W_bar (~chainer.Variable): Normalized (Reparametrized) weight parameter.
-        b (~chainer.Variable): Bias parameter.
-        u (~array): Current estimation of the right largest singular vector of W.
-        (optional) gamma (~chainer.Variable): the multiplier parameter.
-
-    """
-
+class UVLinear(link.Link):
     def __init__(self, in_size, out_size, use_gamma=False, nobias=False,
-                 initialW=None, initial_bias=None, Ip=1):
-        self.Ip = Ip
-        self.u = None
-        self.use_gamma = use_gamma
-        super(SNLinear, self).__init__(
-            in_size, out_size, nobias, initialW, initial_bias
-        )
+                 initialW=None, initial_bias=None, mode=None):
+        if mode == None:
+            raise NotImplementedError()
+        super(UVLinear, self).__init__()
+        self.mode = mode
+        self.in_size = in_size
+        self.out_size = out_size
+
+        with self.init_scope():
+            U_initializer = initializers._get_initializer(initialW)
+            V_initializer = initializers._get_initializer(initialW)
+            D_initializer = initializers._get_initializer(chainer.initializers.One())
+            self.U = variable.Parameter(U_initializer)
+            self.V = variable.Parameter(V_initializer)
+            self.D = variable.Parameter(D_initializer)
+            if in_size is not None:
+                self._initialize_params(in_size)
+
+            if nobias:
+                self.b = None
+            else:
+                if initial_bias is None:
+                    initial_bias = 0
+                bias_initializer = initializers._get_initializer(initial_bias)
+                self.b = variable.Parameter(bias_initializer, out_size)
+
+    def update_sigma(self):
+        if self.mode in (1,4,6,7,8):
+            self.D.data = self.D.data/F.absolute(self.D).data.max()
+        elif self.mode in (2,5):
+            self.D.data = F.clip(self.D,-1,1).data
 
     @property
     def W_bar(self):
         """
         Spectral Normalized Weight
         """
-        sigma, _u, _ = max_sv.max_singular_value(self.W, self.u, self.Ip)
-        sigma = broadcast_to(sigma.reshape((1, 1)), self.W.shape)
-        self.u = _u
-        if hasattr(self, 'gamma'):
-            return broadcast_to(self.gamma, self.W.shape) * self.W / sigma
-        else:
-            return self.W / sigma
+        self.update_sigma()
+        _D = F.broadcast_to(self.D, (self.out_size, self.D.size))
+        _W = F.matmul(self.U * _D, self.V)
+        return _W
 
     def _initialize_params(self, in_size):
-        super(SNLinear, self)._initialize_params(in_size)
-        if self.use_gamma:
-            _, s, _ = np.linalg.svd(self.W.data)
-            with self.init_scope():
-                self.gamma = chainer.Parameter(s[0], (1, 1))
+
+        if self.out_size  <= self.in_size:
+            self.U.initialize((self.out_size, self.out_size))
+            self.D.initialize((self.out_size))
+            self.V.initialize((self.out_size, self.in_size))
+        else:
+            self.U.initialize((self.out_size, self.in_size))
+            self.D.initialize((self.in_size))
+            self.V.initialize((self.in_size, self.in_size))
+
+    def loss_orth(self):
+        penalty = 0
+
+        W = self.U.T
+        Wt = W.T
+        WWt = F.matmul(W, Wt)
+        I = cupy.identity(WWt.shape[0])
+        penalty = penalty+ F.sum((WWt-I)**2)
+
+        W = self.V
+        Wt = W.T
+        WWt = F.matmul(W, Wt)
+        I = cupy.identity(WWt.shape[0])
+        penalty = penalty+ F.sum((WWt-I)**2)
+
+        spectral_penalty = 0
+        if self.mode in (3,):
+            spectral_penalty += F.log(F.max(F.absolute(self.D)))
+        elif self.mode in (4,5):
+            if(self.D.size > 1):
+                sd2 = 0.1**2
+                _d = self.D[cupy.argsort(self.D.data)]
+                spectral_penalty += F.mean( (1 - _d[:-1])**2/sd2-F.log((_d[1:] - _d[:-1])+1e-7) ) * 0.05
+        elif self.mode == 6:
+            spectral_penalty += F.mean(self.D*F.log(self.D))
+        elif self.mode == 7:
+            spectral_penalty += F.mean(torch.exp(self.D))
+        elif self.mode == 8:
+            spectral_penalty += -F.mean(torch.log(self.D))
+
+        return penalty + spectral_penalty*0.1
 
     def __call__(self, x):
         """Applies the linear layer.
@@ -83,6 +114,12 @@ class SNLinear(Linear):
             ~chainer.Variable: Output of the linear layer.
 
         """
-        if self.W.data is None:
+        if self.U.data is None:
             self._initialize_params(x.size // x.shape[0])
         return linear.linear(x, self.W_bar, self.b)
+
+    def showOrthInfo(self):
+        _D = F.broadcast_to(self.D, (self.out_size, self.D.size))
+        _W = F.matmul(self.U * _D, self.V)
+        _, s, _ = cupy.linalg.svd(_W.data)
+        return s

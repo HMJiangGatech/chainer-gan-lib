@@ -64,7 +64,7 @@ class UVConvolution2D(link.Link):
                 bias_initializer = initializers._get_initializer(initial_bias)
                 self.b = variable.Parameter(bias_initializer, out_channels)
 
-    def update_sigma():
+    def update_sigma(self):
         if self.mode in (1,4,6,7,8):
             self.D.data = self.D.data/F.absolute(self.D).data.max()
         elif self.mode in (2,5):
@@ -76,9 +76,9 @@ class UVConvolution2D(link.Link):
         Spectral Normalized Weight
         """
         self.update_sigma()
-        _D = F.broadcast_to(self.D, (self.D.size, self.D.size))
-        _W = F.matmul(self.U * _D, self.V)
-        return self.W
+        _D = F.broadcast_to(self.D, (self.out_channels, self.D.size))
+        _W = F.matmul(self.U.T * _D, self.V)
+        return _W.reshape(self.W_shape)
 
     def _initialize_params(self, in_channels):
         kh, kw = _pair(self.ksize)
@@ -90,7 +90,7 @@ class UVConvolution2D(link.Link):
             self.D.initialize((self.out_channels))
             self.V.initialize((self.out_channels, self.total_in_dim))
         else:
-            self.U.initialize((self.out_channels, self.total_in_dim))
+            self.U.initialize((self.total_in_dim, self.out_channels))
             self.D.initialize((self.total_in_dim))
             self.V.initialize((self.total_in_dim, self.total_in_dim))
 
@@ -112,7 +112,7 @@ class UVConvolution2D(link.Link):
     def loss_orth(self):
         penalty = 0
 
-        W = self.U.T
+        W = self.U
         Wt = W.T
         WWt = F.matmul(W, Wt)
         I = cupy.identity(WWt.shape[0])
@@ -125,7 +125,7 @@ class UVConvolution2D(link.Link):
         penalty = penalty+ F.sum((WWt-I)**2)
 
         spectral_penalty = 0
-        if self.mode in (3):
+        if self.mode in (3,):
             spectral_penalty += F.log(F.max(F.absolute(self.D)))
         elif self.mode in (4,5):
             if(self.D.size > 1):
@@ -142,7 +142,7 @@ class UVConvolution2D(link.Link):
         return penalty + spectral_penalty*0.1
 
     def showOrthInfo(self):
-        _W = self.W.data / self.sigma.data
-        _W = _W.reshape(self.W.shape[0], -1)
-        _, s, _ = cupy.linalg.svd(_W)
+        _D = F.broadcast_to(self.D, (self.out_channels, self.D.size))
+        _W = F.matmul(self.U.T * _D, self.V)
+        _, s, _ = cupy.linalg.svd(_W.data)
         return s
