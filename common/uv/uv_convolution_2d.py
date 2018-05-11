@@ -132,7 +132,7 @@ class UVConvolution2D(link.Link):
             if(self.D.size > 1):
                 sd2 = 0.1**2
                 _d = self.D[cupy.argsort(self.D.data)]
-                spectral_penalty += F.mean( (1 - _d[:-1])**2/sd2-F.log((_d[1:] - _d[:-1])+1e-7) ) #* 0.05
+                spectral_penalty += F.mean( (1 - _d[:-1])**2/sd2-F.log((_d[1:] - _d[:-1])+1e-7) ) * 0.05
         elif self.mode == 6:
             spectral_penalty += F.mean(self.D*F.log(self.D))
         elif self.mode == 7:

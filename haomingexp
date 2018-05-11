@@ -6,7 +6,7 @@ W = UdV
 Mode 1: ! divided by max SN
 Mode 2: ! truncate by 1 SC
 Mode 3: ! penalize sum of all log max spectral
-Mode 4: ! penalize E(-log(q(x))) q(x)~|N(0,0.2)| & divided by max
+Mode 4: ! penalize E(-log(q(x))) q(x)~|N(0,0.2)| & divided by max (failed)
 Mode 5: ! penalize E(-log(q(x))) q(x)~|N(0,0.2)| & truncate by 1 (worked)
 Mode 6: ! penalize dlogd & divided by max
 Mode 7: penalize expd & divided by max
