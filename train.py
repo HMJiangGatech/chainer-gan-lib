@@ -79,6 +79,9 @@ def main():
         elif args.architecture=="sndcgan":
             generator = common.net.DCGANGenerator()
             discriminator = common.net.SNDCGANDiscriminator()
+        elif args.architecture=="snresdcgan":
+            generator = common.net.ResnetGenerator(n_hidden=256)
+            discriminator = common.net.SNResnetDiscriminator()
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
@@ -88,6 +91,9 @@ def main():
         if args.architecture=="orthdcgan":
             generator = common.net.DCGANGenerator()
             discriminator = common.net.ORTHDCGANDiscriminator()
+        elif args.architecture=="orthresdcgan":
+            generator = common.net.ResnetGenerator(n_hidden=256)
+            discriminator = common.net.ORTHResnetDiscriminator(args.udvmode)
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
@@ -98,6 +104,9 @@ def main():
         if args.architecture=="uvdcgan":
             generator = common.net.DCGANGenerator()
             discriminator = common.net.UVDCGANDiscriminator(args.udvmode)
+        elif args.architecture=="uvresdcgan":
+            generator = common.net.ResnetGenerator(n_hidden=256)
+            discriminator = common.net.UVResnetDiscriminator(args.udvmode)
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
@@ -204,8 +213,9 @@ def main():
                    priority=extension.PRIORITY_WRITER)
     trainer.extend(sample_generate_light(generator, args.out), trigger=(args.evaluation_interval // 10, 'iteration'),
                    priority=extension.PRIORITY_WRITER)
-    trainer.extend(sv_generate(discriminator, args.out), trigger=(args.evaluation_interval, 'iteration'),
-                   priority=extension.PRIORITY_WRITER)
+    if "res" not in args.architecture:
+        trainer.extend(sv_generate(discriminator, args.out), trigger=(args.evaluation_interval, 'iteration'),
+                       priority=extension.PRIORITY_WRITER)
     IS_array = []
     FID_array = []
     trainer.extend(calc_inception(generator, IS_array, args.out), trigger=(args.evaluation_interval, 'iteration'),
