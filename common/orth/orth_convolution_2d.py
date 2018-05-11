@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import cupy
+from scipy import linalg
 import chainer
 from chainer import cuda
 from chainer.functions.connection import convolution_2d
@@ -61,6 +63,7 @@ class ORTHConvolution2D(Convolution2D):
         self.Ip = Ip
         self.u = None
         self.use_gamma = use_gamma
+        self.I = cupy.identity(out_channels)
         super(ORTHConvolution2D, self).__init__(
             in_channels, out_channels, ksize, stride, pad,
             nobias, initialW, initial_bias)
@@ -70,7 +73,7 @@ class ORTHConvolution2D(Convolution2D):
         return self.W
 
     def _initialize_params(self, in_size):
-        super(SNConvolution2D, self)._initialize_params(in_size)
+        super(ORTHConvolution2D, self)._initialize_params(in_size)
 
     def __call__(self, x):
         """Applies the convolution layer.
@@ -88,5 +91,11 @@ class ORTHConvolution2D(Convolution2D):
             x, self.W_bar, self.b, self.stride, self.pad)
 
     def loss_orth(self):
-        _W = chainer.functions.reshape(self.W, (self.W.shape[0], -1))
-        return chainer.functions.sum((linear.linear(_W,_W) - self.I)**2)
+        _W = self.W.reshape(self.W.shape[0], -1)
+        return chainer.functions.sum((chainer.functions.linear(_W,_W) - self.I)**2)
+
+    def showOrthInfo(self):
+        _W = self.W.data
+        _W = _W.reshape(self.W.shape[0], -1)
+        _, s, _ = cupy.linalg.svd(_W)
+        return s

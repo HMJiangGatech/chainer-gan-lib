@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import cupy
 import chainer
 from chainer import cuda
 from chainer.functions.connection import linear
@@ -49,7 +50,7 @@ class ORTHLinear(Linear):
         super(ORTHLinear, self).__init__(
             in_size, out_size, nobias, initialW, initial_bias
         )
-        self.I = np.identity(out_size)
+        self.I = cupy.identity(out_size)
 
     @property
     def W_bar(self):

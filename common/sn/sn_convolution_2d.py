@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import cupy
 import chainer
 from chainer import cuda
 from chainer.functions.connection import convolution_2d
@@ -38,10 +39,10 @@ class SNConvolution2D(Convolution2D):
             function uses to initialize ``bias``.
             May also be a callable that takes ``numpy.ndarray`` or
             ``cupy.ndarray`` and edits its value.
-        use_gamma (bool): If true, apply scalar multiplication to the 
+        use_gamma (bool): If true, apply scalar multiplication to the
             normalized weight (i.e. reparameterize).
-        Ip (int): The number of power iteration for calculating the spcetral 
-            norm of the weights. 
+        Ip (int): The number of power iteration for calculating the spcetral
+            norm of the weights.
 
     .. seealso::
        See :func:`chainer.functions.convolution_2d` for the definition of
@@ -75,6 +76,7 @@ class SNConvolution2D(Convolution2D):
         sigma, _u, _ = max_sv.max_singular_value(W_mat, self.u, self.Ip)
         sigma = broadcast_to(sigma.reshape((1, 1, 1, 1)), self.W.shape)
         self.u = _u
+        self.sigma = sigma
         if hasattr(self, 'gamma'):
             return broadcast_to(self.gamma, self.W.shape) * self.W / sigma
         else:
@@ -102,3 +104,9 @@ class SNConvolution2D(Convolution2D):
             self._initialize_params(x.shape[1])
         return convolution_2d.convolution_2d(
             x, self.W_bar, self.b, self.stride, self.pad)
+
+    def showOrthInfo(self):
+        _W = self.W.data / self.sigma.data
+        _W = _W.reshape(self.W.shape[0], -1)
+        _, s, _ = cupy.linalg.svd(_W)
+        return s

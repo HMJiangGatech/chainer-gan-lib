@@ -9,6 +9,7 @@ class Updater(chainer.training.StandardUpdater):
     def __init__(self, *args, **kwargs):
         self.gen, self.dis = kwargs.pop('models')
         self.n_dis = kwargs.pop('n_dis')
+        self.mode = kwargs.pop('mode')
         super(Updater, self).__init__(*args, **kwargs)
 
     def update_core(self):

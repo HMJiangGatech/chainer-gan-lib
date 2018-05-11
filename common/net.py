@@ -222,12 +222,42 @@ class SNDCGANDiscriminator(chainer.Chain):
         h = F.leaky_relu(self.c3_0(h))
         return self.l4(h)
 
+    def showOrthInfo(self):
+        ss = []
+        s = self.c0_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c0_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c1_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c1_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c2_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c2_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c3_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        return ss
+
+
+
 class ORTHDCGANDiscriminator(chainer.Chain):
     def __init__(self, bottom_width=4, ch=512, wscale=0.02, output_dim=1):
-        w = chainer.initializers.Normal(wscale)
+        w = chainer.initializers.Orthogonal(1)
         super(ORTHDCGANDiscriminator, self).__init__()
         with self.init_scope():
-            self.c0_0 = ORTHConvolution2D(3, ch // 8, 3, 1, 1, initialW=w)
+            self.c0_00 = ORTHConvolution2D(3, ch // 8 // 4, 3, 1, 1, initialW=w)
+            self.c0_01 = ORTHConvolution2D(3, ch // 8 // 4, 3, 1, 1, initialW=w)
+            self.c0_02 = ORTHConvolution2D(3, ch // 8 // 4, 3, 1, 1, initialW=w)
+            self.c0_03 = ORTHConvolution2D(3, ch // 8 // 4, 3, 1, 1, initialW=w)
             self.c0_1 = ORTHConvolution2D(ch // 8, ch // 4, 4, 2, 1, initialW=w)
             self.c1_0 = ORTHConvolution2D(ch // 4, ch // 4, 3, 1, 1, initialW=w)
             self.c1_1 = ORTHConvolution2D(ch // 4, ch // 2, 4, 2, 1, initialW=w)
@@ -237,7 +267,8 @@ class ORTHDCGANDiscriminator(chainer.Chain):
             self.l4 = ORTHLinear(bottom_width * bottom_width * ch, output_dim, initialW=w)
 
     def __call__(self, x):
-        h = F.leaky_relu(self.c0_0(x))
+        x = chainer.functions.hstack([self.c0_00(x),self.c0_01(x),self.c0_02(x),self.c0_03(x)])
+        h = F.leaky_relu(x)
         h = F.leaky_relu(self.c0_1(h))
         h = F.leaky_relu(self.c1_0(h))
         h = F.leaky_relu(self.c1_1(h))
@@ -247,12 +278,47 @@ class ORTHDCGANDiscriminator(chainer.Chain):
         return self.l4(h)
 
     def loss_orth(self):
-        loss =  self.c0_0.loss_orth() + self.c0_1.loss_orth() +
-                self.c1_0.loss_orth() + self.c1_1.loss_orth() +
-                self.c2_0.loss_orth() + self.c2_1.loss_orth() +
-                self.c3_0.loss_orth() + self.cl4.loss_orth()
+        loss =  self.c0_00.loss_orth() + self.c0_01.loss_orth() + \
+                self.c0_02.loss_orth() + self.c0_03.loss_orth() + \
+                self.c0_1.loss_orth() + \
+                self.c1_0.loss_orth() + self.c1_1.loss_orth() + \
+                self.c2_0.loss_orth() + self.c2_1.loss_orth() + \
+                self.c3_0.loss_orth() + self.l4.loss_orth()
         return loss
 
+    def showOrthInfo(self):
+        ss = []
+        s = self.c0_00.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c0_01.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c0_02.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c0_03.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c0_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c1_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c1_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c2_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c2_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c3_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        return ss
 
 class WGANDiscriminator(chainer.Chain):
     def __init__(self, bottom_width=4, ch=512, wscale=0.02, output_dim=1):

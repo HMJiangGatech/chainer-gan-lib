@@ -4,6 +4,11 @@ import sys
 
 os.environ["CHAINER_DATASET_ROOT"] = os.path.expanduser('~/dataset')
 
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 import chainer
 from chainer import training
 from chainer.training import extension
@@ -12,7 +17,7 @@ from chainer.training import extensions
 sys.path.append(os.path.dirname(__file__))
 
 from common.dataset import Cifar10Dataset
-from common.evaluation import sample_generate, sample_generate_light, calc_inception, calc_FID
+from common.evaluation import sample_generate, sample_generate_light, calc_inception, calc_FID, sv_generate
 from common.record import record_setting
 import common.net
 
@@ -30,8 +35,8 @@ def main():
     parser.add_argument('--max_iter', type=int, default=100000)
     parser.add_argument('--gpu', '-g', type=int, default=0, help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--out', '-o', default='result', help='Directory to output the result')
-    parser.add_argument('--snapshot_interval', type=int, default=10000, help='Interval of snapshot')
-    parser.add_argument('--evaluation_interval', type=int, default=10000, help='Interval of evaluation')
+    parser.add_argument('--snapshot_interval', type=int, default=5000, help='Interval of snapshot')
+    parser.add_argument('--evaluation_interval', type=int, default=5000, help='Interval of evaluation')
     parser.add_argument('--display_interval', type=int, default=100, help='Interval of displaying log to console')
     parser.add_argument('--n_dis', type=int, default=5, help='number of discriminator update per generator update')
     parser.add_argument('--gamma', type=float, default=0.5, help='hyperparameter gamma')
@@ -82,8 +87,14 @@ def main():
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="orthdcgan":
             generator = common.net.DCGANGenerator()
-            discriminator = common.net.OrthDCGANDiscriminator()
-        elif args.architecture=="uvdcgan":
+            discriminator = common.net.ORTHDCGANDiscriminator()
+        else:
+            raise NotImplementedError()
+        models = [generator, discriminator]
+    elif args.algorithm == "orthgan":
+        from uvgan.updater import Updater
+        updater_args["n_dis"] = args.n_dis
+        if args.architecture=="uvdcgan":
             generator = common.net.DCGANGenerator()
             discriminator = common.net.UVDCGANDiscriminator(args.udvmode)
         else:
@@ -192,9 +203,13 @@ def main():
                    priority=extension.PRIORITY_WRITER)
     trainer.extend(sample_generate_light(generator, args.out), trigger=(args.evaluation_interval // 10, 'iteration'),
                    priority=extension.PRIORITY_WRITER)
-    trainer.extend(calc_inception(generator), trigger=(args.evaluation_interval, 'iteration'),
+    trainer.extend(sv_generate(discriminator, args.out), trigger=(args.evaluation_interval, 'iteration'),
                    priority=extension.PRIORITY_WRITER)
-    trainer.extend(calc_FID(generator), trigger=(args.evaluation_interval, 'iteration'),
+    IS_array = []
+    FID_array = []
+    trainer.extend(calc_inception(generator, IS_array, args.out), trigger=(args.evaluation_interval, 'iteration'),
+                   priority=extension.PRIORITY_WRITER)
+    trainer.extend(calc_FID(generator, FID_array, args.out), trigger=(args.evaluation_interval, 'iteration'),
                    priority=extension.PRIORITY_WRITER)
     trainer.extend(extensions.ProgressBar(update_interval=10))
 
