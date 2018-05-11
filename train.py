@@ -102,7 +102,6 @@ def main():
         models = [generator, discriminator]
     elif args.algorithm == "uvgan":
         updater_args["n_dis"] = args.n_dis
-        updater_args["mode"] = args.udvmode
         if args.architecture=="uvdcgan":
             from orthgan.updater import Updater
             generator = common.net.DCGANGenerator()

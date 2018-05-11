@@ -161,3 +161,79 @@ class OptimizedORTHBlock(chainer.Chain):
 
     def __call__(self, x):
         return self.residual(x) + self.shortcut(x)
+
+
+class UVBlock(chainer.Chain):
+    def __init__(self, in_channels, out_channels, hidden_channels=None, ksize=3, pad=1,
+                 activation=F.relu, downsample=False, mode=None):
+        super(UVBlock, self).__init__()
+        initializer = chainer.initializers.Orthogonal(1)
+        initializer_sc = chainer.initializers.Orthogonal(1)
+        self.activation = activation
+        self.downsample = downsample
+        self.learnable_sc = (in_channels != out_channels) or downsample
+        hidden_channels = in_channels if hidden_channels is None else hidden_channels
+        with self.init_scope():
+            self.c1 = UVConvolution2D(in_channels, hidden_channels, ksize=ksize, pad=pad, initialW=initializer, mode=mode)
+            self.c2 = UVConvolution2D(hidden_channels, out_channels, ksize=ksize, pad=pad, initialW=initializer, mode=mode)
+            if self.learnable_sc:
+                self.c_sc = UVConvolution2D(in_channels, out_channels, ksize=1, pad=0, initialW=initializer_sc, mode=mode)
+
+    def loss_orth(self):
+        loss =  self.c1.loss_orth() + self.c2.loss_orth()
+        if self.learnable_sc:
+            loss += self.c_sc.loss_orth()
+        return loss
+
+    def residual(self, x):
+        h = x
+        h = self.activation(h)
+        h = self.c1(h)
+        h = self.activation(h)
+        h = self.c2(h)
+        if self.downsample:
+            h = _downsample(h)
+        return h
+
+    def shortcut(self, x):
+        if self.learnable_sc:
+            x = self.c_sc(x)
+            if self.downsample:
+                return _downsample(x)
+            else:
+                return x
+        else:
+            return x
+
+    def __call__(self, x):
+        return self.residual(x) + self.shortcut(x)
+
+
+class OptimizedUVBlock(chainer.Chain):
+    def __init__(self, in_channels, out_channels, ksize=3, pad=1, activation=F.relu, mode=None):
+        super(OptimizedUVBlock, self).__init__()
+        initializer = chainer.initializers.Orthogonal(1)
+        initializer_sc = w = chainer.initializers.Orthogonal(1)
+        self.activation = activation
+        with self.init_scope():
+            # 128 = 27*5+3
+            self.c1 = UVConvolution2D(in_channels, out_channels, ksize=ksize, pad=pad, initialW=initializer, mode=mode)
+            self.c2 = UVConvolution2D(out_channels, out_channels, ksize=ksize, pad=pad, initialW=initializer, mode=mode)
+            self.c_sc = UVConvolution2D(in_channels, out_channels, ksize=1, pad=0, initialW=initializer_sc, mode=mode)
+
+    def loss_orth(self):
+        loss =  self.c1.loss_orth() + self.c2.loss_orth() + self.c_sc.loss_orth()
+        return loss
+
+    def residual(self, x):
+        h = self.c1(x)
+        h = self.activation(h)
+        h = self.c2(h)
+        h = _downsample(h)
+        return h
+
+    def shortcut(self, x):
+        return self.c_sc(_downsample(x))
+
+    def __call__(self, x):
+        return self.residual(x) + self.shortcut(x)

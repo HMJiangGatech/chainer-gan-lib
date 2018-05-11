@@ -555,6 +555,7 @@ class ResnetDiscriminator(chainer.Chain):
 
 from dis_models.resblocks import SNBlock, OptimizedSNBlock
 from dis_models.resblocks import ORTHBlock, OptimizedORTHBlock
+from dis_models.resblocks import UVBlock, OptimizedUVBlock
 
 class SNResnetDiscriminator(chainer.Chain):
     def __init__(self, bottom_width=8, ch=128, wscale=0.02, output_dim=1):
@@ -614,17 +615,18 @@ class ORTHResnetDiscriminator(chainer.Chain):
         return loss
 
 class UVResnetDiscriminator(chainer.Chain):
-    def __init__(self, bottom_width=8, ch=128, wscale=0.02, output_dim=1):
-        w = chainer.initializers.Normal(wscale)
+    def __init__(self, mode, bottom_width=8, ch=128, wscale=0.02, output_dim=1):
+        w = chainer.initializers.GlorotUniform()
         super(UVResnetDiscriminator, self).__init__()
         self.bottom_width = bottom_width
         self.ch = ch
         with self.init_scope():
-            self.r0 = UVDownResBlock1(ch)
-            self.r1 = UVDownResBlock1(ch)
-            self.r2 = UVDownResBlock1(ch)
-            self.r3 = UVDownResBlock1(ch)
-            self.l4 = L.Linear(bottom_width * bottom_width * ch, output_dim, initialW=w)
+            self.r0 = OptimizedUVBlock(3, ch, mode=mode)
+            self.r1 = UVBlock(ch, ch, activation=F.relu, downsample=True, mode=mode)
+            self.r2 = UVBlock(ch, ch, activation=F.relu, downsample=True, mode=mode)
+            self.r3 = UVBlock(ch, ch, activation=F.relu, downsample=False, mode=mode)
+            self.r4 = UVBlock(ch, ch, activation=F.relu, downsample=False, mode=mode)
+            self.l5 = UVLinear(ch, output_dim, initialW=w, mode=mode)
 
     def __call__(self, x):
         self.x = x
@@ -632,14 +634,15 @@ class UVResnetDiscriminator(chainer.Chain):
         self.h2 = self.r1(self.h1)
         self.h3 = self.r2(self.h2)
         self.h4 = self.r3(self.h3)
-        return self.l4(F.relu(self.h4))
+        self.h5 = self.r4(self.h4)
+        self.h6 = F.sum(F.relu(self.h5), axis=(2, 3))
+        return self.l5(self.h6)
 
-    def differentiable_backward(self, x):
-        g = backward_linear(self.h4, x, self.l4)
-        g = F.reshape(g, (x.shape[0], self.ch, self.bottom_width, self.bottom_width))
-        g = backward_leaky_relu(self.h4, g, 0.0)
-        g = self.r3.differentiable_backward(g)
-        g = self.r2.differentiable_backward(g)
-        g = self.r1.differentiable_backward(g)
-        g = self.r0.differentiable_backward(g)
-        return g
+    def loss_orth(self):
+        loss =  self.r0.loss_orth() + \
+                self.r1.loss_orth() + \
+                self.r2.loss_orth() + \
+                self.r3.loss_orth() + \
+                self.r4.loss_orth() + \
+                self.l5.loss_orth()
+        return loss
