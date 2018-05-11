@@ -254,6 +254,7 @@ class UVDCGANDiscriminator(chainer.Chain):
     def __init__(self, mode, bottom_width=4, ch=512, wscale=0.02, output_dim=1):
         w = chainer.initializers.Orthogonal(1)
         super(UVDCGANDiscriminator, self).__init__()
+        self.mode = mode
         with self.init_scope():
             self.c0_0 = UVConvolution2D(3, ch // 8, 3, 1, 1, initialW=w, mode=mode)
             self.c0_1 = UVConvolution2D(ch // 8, ch // 4, 4, 2, 1, initialW=w, mode=mode)
@@ -279,6 +280,11 @@ class UVDCGANDiscriminator(chainer.Chain):
                 self.c1_0.loss_orth() + self.c1_1.loss_orth() + \
                 self.c2_0.loss_orth() + self.c2_1.loss_orth() + \
                 self.c3_0.loss_orth() + self.l4.loss_orth()
+        if self.mode == 3:
+            loss += F.relu(self.c0_0.log_d_max() + self.c0_1.log_d_max() + \
+                    self.c1_0.log_d_max() + self.c1_1.log_d_max() + \
+                    self.c2_0.log_d_max() + self.c2_1.log_d_max() + \
+                    self.c3_0.log_d_max() + self.l4.log_d_max()) * 0.1
         return loss
 
     def showOrthInfo(self):
@@ -377,6 +383,7 @@ class ORTHDCGANDiscriminator(chainer.Chain):
         s = self.c3_0.showOrthInfo()
         s.sort()
         ss.append(s)
+        self.l4.showOrthInfo()
         return ss
 
 class WGANDiscriminator(chainer.Chain):

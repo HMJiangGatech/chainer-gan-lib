@@ -109,6 +109,9 @@ class UVConvolution2D(link.Link):
         return convolution_2d.convolution_2d(
             x, self.W_bar, self.b, self.stride, self.pad)
 
+    def log_d_max(self):
+        return F.log(F.max(F.absolute(self.D)))
+
     def loss_orth(self):
         penalty = 0
 
@@ -125,13 +128,11 @@ class UVConvolution2D(link.Link):
         penalty = penalty+ F.sum((WWt-I)**2)
 
         spectral_penalty = 0
-        if self.mode in (3,):
-            spectral_penalty += F.log(F.max(F.absolute(self.D)))
-        elif self.mode in (4,5):
+        if self.mode in (4,5):
             if(self.D.size > 1):
                 sd2 = 0.1**2
                 _d = self.D[cupy.argsort(self.D.data)]
-                spectral_penalty += F.mean( (1 - _d[:-1])**2/sd2-F.log((_d[1:] - _d[:-1])+1e-7) ) * 0.05
+                spectral_penalty += F.mean( (1 - _d[:-1])**2/sd2-F.log((_d[1:] - _d[:-1])+1e-7) ) #* 0.05
         elif self.mode == 6:
             spectral_penalty += F.mean(self.D*F.log(self.D))
         elif self.mode == 7:
@@ -145,4 +146,11 @@ class UVConvolution2D(link.Link):
         _D = F.broadcast_to(self.D, (self.out_channels, self.D.size))
         _W = F.matmul(self.U.T * _D, self.V)
         _, s, _ = cupy.linalg.svd(_W.data)
+
+        print('Singular Value Summary: ')
+        print('max :',s.max())
+        print('mean:',s.mean())
+        print('min :',s.min())
+        print('var :',s.var())
+
         return s

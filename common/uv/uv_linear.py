@@ -72,6 +72,9 @@ class UVLinear(link.Link):
             self.D.initialize((self.in_size))
             self.V.initialize((self.in_size, self.in_size))
 
+    def log_d_max(self):
+        return F.log(F.max(F.absolute(self.D)))
+
     def loss_orth(self):
         penalty = 0
 
@@ -88,9 +91,7 @@ class UVLinear(link.Link):
         penalty = penalty+ F.sum((WWt-I)**2)
 
         spectral_penalty = 0
-        if self.mode in (3,):
-            spectral_penalty += F.log(F.max(F.absolute(self.D)))
-        elif self.mode in (4,5):
+        if self.mode in (4,5):
             if(self.D.size > 1):
                 sd2 = 0.1**2
                 _d = self.D[cupy.argsort(self.D.data)]
@@ -122,4 +123,9 @@ class UVLinear(link.Link):
         _D = F.broadcast_to(self.D, (self.out_size, self.D.size))
         _W = F.matmul(self.U * _D, self.V)
         _, s, _ = cupy.linalg.svd(_W.data)
+        print('Singular Value Summary: ')
+        print('max :',s.max())
+        print('mean:',s.mean())
+        print('min :',s.min())
+        print('var :',s.var())
         return s
