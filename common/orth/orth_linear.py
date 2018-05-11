@@ -51,7 +51,7 @@ class ORTHLinear(Linear):
         super(ORTHLinear, self).__init__(
             in_size, out_size, nobias, initialW, initial_bias
         )
-        self.I = cupy.identity(out_size)
+        self.out_size = out_size
 
     @property
     def W_bar(self):
@@ -75,4 +75,4 @@ class ORTHLinear(Linear):
         return linear.linear(x, self.W_bar, self.b)
 
     def loss_orth(self):
-        return F.sum((F.matmul(self.W,self.W.T) - self.I)**2)
+        return F.sum((F.matmul(self.W,self.W.T) - cupy.identity(self.out_size))**2)
