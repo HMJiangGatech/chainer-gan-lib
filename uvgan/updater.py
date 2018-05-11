@@ -48,6 +48,7 @@ class Updater(chainer.training.StandardUpdater):
 
             self.dis.cleargrads()
             loss_dis.backward()
+            loss_orth.backward()
             dis_optimizer.update()
 
             chainer.reporter.report({'loss_dis': loss_dis})

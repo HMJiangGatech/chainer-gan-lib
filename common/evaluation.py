@@ -210,7 +210,7 @@ def calc_FID(gen, fidarray, dir, batchsize=100, stat_file="%s/cifar-10-fid.npz"%
             'FID': fid,
         })
         fidarray.append(fid)
-        plt.plot(range(len(fidarray)), fidarray, 'r-', label = 'Inception Score')
+        plt.plot(range(len(fidarray)), fidarray, 'r-', label = 'FID Score')
         plt.legend()
         plt.savefig(dir+'/fid_score.pdf', bbox_inches='tight',format="pdf", dpi = 300)
         plt.close()

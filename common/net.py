@@ -248,6 +248,63 @@ class SNDCGANDiscriminator(chainer.Chain):
         return ss
 
 
+class UVDCGANDiscriminator(chainer.Chain):
+    def __init__(self, bottom_width=4, ch=512, wscale=0.02, output_dim=1):
+        w = chainer.initializers.Orthogonal(1)
+        super(UVDCGANDiscriminator, self).__init__()
+        with self.init_scope():
+            self.c0_0 = UVConvolution2D(3, ch // 8, 3, 1, 1, initialW=w)
+            self.c0_1 = UVConvolution2D(ch // 8, ch // 4, 4, 2, 1, initialW=w)
+            self.c1_0 = UVConvolution2D(ch // 4, ch // 4, 3, 1, 1, initialW=w)
+            self.c1_1 = UVConvolution2D(ch // 4, ch // 2, 4, 2, 1, initialW=w)
+            self.c2_0 = UVConvolution2D(ch // 2, ch // 2, 3, 1, 1, initialW=w)
+            self.c2_1 = UVConvolution2D(ch // 2, ch // 1, 4, 2, 1, initialW=w)
+            self.c3_0 = UVConvolution2D(ch // 1, ch // 1, 3, 1, 1, initialW=w)
+            self.l4 = UVLinear(bottom_width * bottom_width * ch, output_dim, initialW=w)
+
+    def __call__(self, x):
+        h = F.leaky_relu(self.c0_0(x))
+        h = F.leaky_relu(self.c0_1(h))
+        h = F.leaky_relu(self.c1_0(h))
+        h = F.leaky_relu(self.c1_1(h))
+        h = F.leaky_relu(self.c2_0(h))
+        h = F.leaky_relu(self.c2_1(h))
+        h = F.leaky_relu(self.c3_0(h))
+        return self.l4(h)
+
+    def loss_orth(self):
+        loss =  self.c0_0.loss_orth() + self.c0_1.loss_orth() + \
+                self.c1_0.loss_orth() + self.c1_1.loss_orth() + \
+                self.c2_0.loss_orth() + self.c2_1.loss_orth() + \
+                self.c3_0.loss_orth() + self.l4.loss_orth()
+        return loss
+
+    def showOrthInfo(self):
+        ss = []
+        s = self.c0_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c0_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c1_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c1_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c2_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c2_1.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        s = self.c3_0.showOrthInfo()
+        s.sort()
+        ss.append(s)
+        return ss
+
+
 
 class ORTHDCGANDiscriminator(chainer.Chain):
     def __init__(self, bottom_width=4, ch=512, wscale=0.02, output_dim=1):

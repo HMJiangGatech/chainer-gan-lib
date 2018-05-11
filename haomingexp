@@ -1,0 +1,14 @@
+python train.py --gpu 0 --algorithm stdgan --architecture sndcgan --out result_sndcgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+python train.py --gpu 0 --algorithm orthgan --architecture orthdcgan --out result_orthgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+# MODE1 Spectrual Norm
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 1 --out result_uvgan_mode1 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+# MODE2 Spectrual Clipping
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 2 --out result_uvgan_mode2 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+# MODE3 Lipschitz Reg
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 3 --out result_uvgan_mode3 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+# MODE4 SN + Penalty Control.
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 4 --out result_uvgan_mode4 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+# MODE5 SN + Divergence Control
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 5 --out result_uvgan_mode5 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999
+# MODE6 SC + Divergence Control
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 6 --out result_uvgan_mode6 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999

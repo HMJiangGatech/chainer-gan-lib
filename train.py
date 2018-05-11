@@ -91,7 +91,7 @@ def main():
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
-    elif args.algorithm == "orthgan":
+    elif args.algorithm == "uvgan":
         from uvgan.updater import Updater
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="uvdcgan":
