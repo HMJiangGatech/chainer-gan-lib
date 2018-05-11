@@ -152,7 +152,6 @@ class OptimizedORTHBlock(chainer.Chain):
 
     def residual(self, x):
         h = chainer.functions.hstack([self.c10(x),self.c11(x),self.c12(x),self.c13(x),self.c14(x)])
-        h = self.c1(h)
         h = self.activation(h)
         h = self.c2(h)
         h = _downsample(h)
