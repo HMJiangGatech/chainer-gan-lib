@@ -88,5 +88,5 @@ class ORTHConvolution2D(Convolution2D):
             x, self.W_bar, self.b, self.stride, self.pad)
 
     def loss_orth(self):
-        _W = self.W
+        _W = chainer.functions.reshape(self.W, (self.W.shape[0], -1))
         return chainer.functions.sum((linear.linear(_W,_W) - self.I)**2)
