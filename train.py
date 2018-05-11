@@ -2,6 +2,8 @@ import argparse
 import os
 import sys
 
+os.environ["CHAINER_DATASET_ROOT"] = os.path.expanduser('~/dataset')
+
 import chainer
 from chainer import training
 from chainer.training import extension
@@ -23,6 +25,7 @@ def main():
     parser = argparse.ArgumentParser(description='Train script')
     parser.add_argument('--algorithm', '-a', type=str, default="dcgan", help='GAN algorithm')
     parser.add_argument('--architecture', type=str, default="dcgan", help='Network architecture')
+    parser.add_argument('--udvmode', type=int, default=1)
     parser.add_argument('--batchsize', type=int, default=64)
     parser.add_argument('--max_iter', type=int, default=100000)
     parser.add_argument('--gpu', '-g', type=int, default=0, help='GPU ID (negative value indicates CPU)')
@@ -71,6 +74,18 @@ def main():
         elif args.architecture=="sndcgan":
             generator = common.net.DCGANGenerator()
             discriminator = common.net.SNDCGANDiscriminator()
+        else:
+            raise NotImplementedError()
+        models = [generator, discriminator]
+    elif args.algorithm == "orthgan":
+        from orthgan.updater import Updater
+        updater_args["n_dis"] = args.n_dis
+        if args.architecture=="orthdcgan":
+            generator = common.net.DCGANGenerator()
+            discriminator = common.net.OrthDCGANDiscriminator()
+        elif args.architecture=="uvdcgan":
+            generator = common.net.DCGANGenerator()
+            discriminator = common.net.UVDCGANDiscriminator(args.udvmode)
         else:
             raise NotImplementedError()
         models = [generator, discriminator]

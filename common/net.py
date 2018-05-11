@@ -8,6 +8,8 @@ from chainer import cuda
 import numpy as np
 from sn.sn_linear import SNLinear
 from sn.sn_convolution_2d import SNConvolution2D
+from orth.orth_linear import ORTHLinear
+from orth.orth_convolution_2d import ORTHConvolution2D
 
 
 def add_noise(h, sigma=0.2):
@@ -220,6 +222,36 @@ class SNDCGANDiscriminator(chainer.Chain):
         h = F.leaky_relu(self.c3_0(h))
         return self.l4(h)
 
+class ORTHDCGANDiscriminator(chainer.Chain):
+    def __init__(self, bottom_width=4, ch=512, wscale=0.02, output_dim=1):
+        w = chainer.initializers.Normal(wscale)
+        super(ORTHDCGANDiscriminator, self).__init__()
+        with self.init_scope():
+            self.c0_0 = ORTHConvolution2D(3, ch // 8, 3, 1, 1, initialW=w)
+            self.c0_1 = ORTHConvolution2D(ch // 8, ch // 4, 4, 2, 1, initialW=w)
+            self.c1_0 = ORTHConvolution2D(ch // 4, ch // 4, 3, 1, 1, initialW=w)
+            self.c1_1 = ORTHConvolution2D(ch // 4, ch // 2, 4, 2, 1, initialW=w)
+            self.c2_0 = ORTHConvolution2D(ch // 2, ch // 2, 3, 1, 1, initialW=w)
+            self.c2_1 = ORTHConvolution2D(ch // 2, ch // 1, 4, 2, 1, initialW=w)
+            self.c3_0 = ORTHConvolution2D(ch // 1, ch // 1, 3, 1, 1, initialW=w)
+            self.l4 = ORTHLinear(bottom_width * bottom_width * ch, output_dim, initialW=w)
+
+    def __call__(self, x):
+        h = F.leaky_relu(self.c0_0(x))
+        h = F.leaky_relu(self.c0_1(h))
+        h = F.leaky_relu(self.c1_0(h))
+        h = F.leaky_relu(self.c1_1(h))
+        h = F.leaky_relu(self.c2_0(h))
+        h = F.leaky_relu(self.c2_1(h))
+        h = F.leaky_relu(self.c3_0(h))
+        return self.l4(h)
+
+    def loss_orth(self):
+        loss =  self.c0_0.loss_orth() + self.c0_1.loss_orth() +
+                self.c1_0.loss_orth() + self.c1_1.loss_orth() +
+                self.c2_0.loss_orth() + self.c2_1.loss_orth() +
+                self.c3_0.loss_orth() + self.cl4.loss_orth()
+        return loss
 
 
 class WGANDiscriminator(chainer.Chain):
