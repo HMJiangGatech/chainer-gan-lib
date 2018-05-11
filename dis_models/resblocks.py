@@ -1,6 +1,7 @@
 import math
 import chainer
 from chainer import functions as F
+import chainer.links as L
 
 from common.sn.sn_linear import SNLinear
 from common.sn.sn_convolution_2d import SNConvolution2D
@@ -132,7 +133,7 @@ class OptimizedORTHBlock(chainer.Chain):
     def __init__(self, in_channels, out_channels, ksize=3, pad=1, activation=F.relu):
         super(OptimizedORTHBlock, self).__init__()
         initializer = chainer.initializers.Orthogonal(1)
-        initializer_sc = chainer.initializers.Orthogonal(1)
+        initializer_sc = chainer.initializers.GlorotUniform()
         self.activation = activation
         with self.init_scope():
             # 128 = 27*5+3
@@ -142,7 +143,7 @@ class OptimizedORTHBlock(chainer.Chain):
             self.c13 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
             self.c14 = ORTHConvolution2D(in_channels, out_channels//5, ksize=ksize, pad=pad, initialW=initializer)
             self.c2 = ORTHConvolution2D(out_channels, out_channels, ksize=ksize, pad=pad, initialW=initializer)
-            self.c_sc = ORTHConvolution2D(in_channels, out_channels, ksize=1, pad=0, initialW=initializer_sc)
+            self.c_sc = L.Convolution2D(in_channels, out_channels, ksize=1, pad=0, initialW=initializer_sc)
 
     def loss_orth(self):
         loss =  self.c10.loss_orth() + self.c11.loss_orth() + self.c12.loss_orth() + self.c13.loss_orth() + self.c14.loss_orth() + self.c2.loss_orth()
