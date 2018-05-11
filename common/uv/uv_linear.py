@@ -49,7 +49,7 @@ class UVLinear(link.Link):
         if self.mode in (1,4,6,7,8):
             self.D.data = self.D.data/F.absolute(self.D).data.max()
         elif self.mode in (2,5):
-            self.D.data = F.clip(self.D,-1,1).data
+            self.D.data = F.clip(self.D,-1.,1.).data
 
     @property
     def W_bar(self):
