@@ -113,12 +113,12 @@ def download_and_extract():
 def getSTL(withlabel=False, ndim=3, scale=1.):
     # download data if needed
     download_and_extract()
-    if not os.path.exists(All_DATA_PATH) or True:
+    if not os.path.exists(All_DATA_PATH):
         unlabeled_x = read_all_images(UNLABELED_DATA_PATH)
 
         alldata = _preprocess_STL(unlabeled_x, 0, False, ndim, scale)
 
-        np.save(All_DATA_PATH, unlabeled)
+        np.save(All_DATA_PATH, alldata)
     else:
         alldata = np.load(All_DATA_PATH)
 
