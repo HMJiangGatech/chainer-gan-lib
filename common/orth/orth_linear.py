@@ -76,3 +76,8 @@ class ORTHLinear(Linear):
 
     def loss_orth(self):
         return F.sum((F.matmul(self.W,self.W.T) - cupy.identity(self.out_size))**2)
+
+    def showOrthInfo(self):
+        _W = self.W.data
+        _, s, _ = cupy.linalg.svd(_W)
+        return s
