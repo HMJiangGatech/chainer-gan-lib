@@ -35,26 +35,26 @@ python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 3 
 python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 8 --out result_resuvgan_mode8 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9
 
 ##################################STL-10
-python train.py --gpu 0 --algorithm stdgan --architecture sndcgan --out result_sndcgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
-python train.py --gpu 0 --algorithm orthgan --architecture orthdcgan --out result_orthgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm stdgan --architecture sndcgan --out stlresult_sndcgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm orthgan --architecture orthdcgan --out stlresult_orthgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 
 # MODE1 Spectrual Norm
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 1 --out result_uvgan_mode1 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 1 --out stlresult_uvgan_mode1 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE2 Spectrual Clipping
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 2 --out result_uvgan_mode2 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 2 --out stlresult_uvgan_mode2 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE3 Lipschitz Reg
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 3 --out result_uvgan_mode3 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 3 --out stlresult_uvgan_mode3 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE5 SC + Divergence Control
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 5 --out result_uvgan_mode5 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 5 --out stlresult_uvgan_mode5 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE8 SN + Penalty Control
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 8 --out result_uvgan_mode8 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 8 --out stlresult_uvgan_mode8 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 
 # Resnet
 
-python train.py --gpu 0 --algorithm stdgan --architecture snresdcgan --out result_ressndcgan --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10
-python train.py --gpu 0 --algorithm orthgan --architecture orthresdcgan --out result_resorthgan --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10
+python train.py --gpu 0 --algorithm stdgan --architecture snresdcgan --out stlresult_ressndcgan --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10
+python train.py --gpu 0 --algorithm orthgan --architecture orthresdcgan --out stlresult_resorthgan --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10
 
 # MODE3 Lipschitz Reg
-python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 3 --out result_resuvgan_mode3 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 3 --out stlresult_resuvgan_mode3 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10
 # MODE8 SN + Penalty Control
-python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 8 --out result_resuvgan_mode8 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvresdcgan --udvmode 8 --out stlresult_resuvgan_mode8 --n_dis 5 --adam_beta1 0 --adam_beta2 0.9 --dataset stl10

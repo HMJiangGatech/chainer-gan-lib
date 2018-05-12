@@ -112,7 +112,7 @@ def main():
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="uvdcgan":
             from orthgan.updater import Updater
-            generator = common.net.DCGANGenerator(bottom_width=bottom_width)
+            generator = common.net.DCGANGenerator(bottom_width=args.bottom_width)
             discriminator = common.net.UVDCGANDiscriminator(args.udvmode,bottom_width = args.bottom_width)
         elif args.architecture=="uvresdcgan":
             from orthgan.updater import HingeUpdater as Updater
