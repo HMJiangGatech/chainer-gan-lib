@@ -16,7 +16,7 @@ from chainer.training import extensions
 
 sys.path.append(os.path.dirname(__file__))
 
-from common.dataset import Cifar10Dataset
+from common.dataset import Cifar10Dataset, STL10Dataset
 from common.evaluation import sample_generate, sample_generate_light, calc_inception, calc_FID, sv_generate
 from common.record import record_setting
 import common.net
@@ -30,6 +30,8 @@ def main():
     parser = argparse.ArgumentParser(description='Train script')
     parser.add_argument('--algorithm', '-a', type=str, default="dcgan", help='GAN algorithm')
     parser.add_argument('--architecture', type=str, default="dcgan", help='Network architecture')
+    parser.add_argument('--dataset', type=str, default="cifar10", help='Dataset')
+    parser.add_argument('--bottom_width', type=int, default=4)
     parser.add_argument('--udvmode', type=int, default=1)
     parser.add_argument('--batchsize', type=int, default=64)
     parser.add_argument('--max_iter', type=int, default=100000)
@@ -51,7 +53,13 @@ def main():
     report_keys = ["loss_dis", "loss_gen", "inception_mean", "inception_std", "FID", "loss_orth"]
 
     # Set up dataset
-    train_dataset = Cifar10Dataset()
+    if args.dataset == "cifar10":
+        train_dataset = Cifar10Dataset()
+    elif args.dataset == "stl10":
+        train_dataset = STL10Dataset()
+        args.bottom_width = 6
+    else:
+        raise NotImplementedError()
     train_iter = chainer.iterators.SerialIterator(train_dataset, args.batchsize)
 
     # Setup algorithm specific networks and updaters
@@ -74,16 +82,16 @@ def main():
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="dcgan":
             from stdgan.updater import Updater
-            generator = common.net.DCGANGenerator()
-            discriminator = common.net.DCGANDiscriminator()
+            generator = common.net.DCGANGenerator(bottom_width = args.bottom_width)
+            discriminator = common.net.DCGANDiscriminator(bottom_width = args.bottom_width)
         elif args.architecture=="sndcgan":
             from stdgan.updater import Updater
-            generator = common.net.DCGANGenerator()
-            discriminator = common.net.SNDCGANDiscriminator()
+            generator = common.net.DCGANGenerator(bottom_width = args.bottom_width)
+            discriminator = common.net.SNDCGANDiscriminator(bottom_width = args.bottom_width)
         elif args.architecture=="snresdcgan":
             from stdgan.updater import HingeUpdater as Updater
-            generator = common.net.ResnetGenerator(n_hidden=256)
-            discriminator = common.net.SNResnetDiscriminator()
+            generator = common.net.ResnetGenerator(n_hidden=256, bottom_width = args.bottom_width)
+            discriminator = common.net.SNResnetDiscriminator(bottom_width = args.bottom_width)
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
@@ -91,12 +99,12 @@ def main():
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="orthdcgan":
             from orthgan.updater import Updater
-            generator = common.net.DCGANGenerator()
-            discriminator = common.net.ORTHDCGANDiscriminator()
+            generator = common.net.DCGANGenerator(bottom_width = args.bottom_width)
+            discriminator = common.net.ORTHDCGANDiscriminator(bottom_width = args.bottom_width)
         elif args.architecture=="orthresdcgan":
             from orthgan.updater import HingeUpdater as Updater
-            generator = common.net.ResnetGenerator(n_hidden=256)
-            discriminator = common.net.ORTHResnetDiscriminator(args.udvmode)
+            generator = common.net.ResnetGenerator(n_hidden=256,bottom_width = args.bottom_width)
+            discriminator = common.net.ORTHResnetDiscriminator(bottom_width = args.bottom_width)
         else:
             raise NotImplementedError()
         models = [generator, discriminator]
@@ -104,12 +112,12 @@ def main():
         updater_args["n_dis"] = args.n_dis
         if args.architecture=="uvdcgan":
             from orthgan.updater import Updater
-            generator = common.net.DCGANGenerator()
-            discriminator = common.net.UVDCGANDiscriminator(args.udvmode)
+            generator = common.net.DCGANGenerator(bottom_width=bottom_width)
+            discriminator = common.net.UVDCGANDiscriminator(args.udvmode,bottom_width = args.bottom_width)
         elif args.architecture=="uvresdcgan":
             from orthgan.updater import HingeUpdater as Updater
-            generator = common.net.ResnetGenerator(n_hidden=256)
-            discriminator = common.net.UVResnetDiscriminator(args.udvmode)
+            generator = common.net.ResnetGenerator(n_hidden=256,bottom_width = args.bottom_width)
+            discriminator = common.net.UVResnetDiscriminator(args.udvmode,bottom_width = args.bottom_width)
         else:
             raise NotImplementedError()
         models = [generator, discriminator]

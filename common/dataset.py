@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import chainer
 from chainer.dataset import dataset_mixin
+from common.getSTL import getSTL
 
 
 class Cifar10Dataset(dataset_mixin.DatasetMixin):
@@ -22,6 +23,17 @@ class Cifar10Dataset(dataset_mixin.DatasetMixin):
     def get_example(self, i):
         return self.ims[i]
 
+class STL10Dataset(dataset_mixin.DatasetMixin):
+    def __init__(self, test=False):
+        self.ims = getSTL(ndim=3, withlabel=False, scale=1.0)
+        self.ims = self.ims * 2 - 1.0  # [-1.0, 1.0]
+        print("load stl-10.  shape: ", self.ims.shape)
+
+    def __len__(self):
+        return self.ims.shape[0]
+
+    def get_example(self, i):
+        return self.ims[i]
 
 def image_to_np(img):
     img = img.convert('RGB')
