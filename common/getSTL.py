@@ -116,7 +116,7 @@ def getSTL(withlabel=False, ndim=3, scale=1.):
     if not os.path.exists(All_DATA_PATH) or True:
         unlabeled_x = read_all_images(UNLABELED_DATA_PATH)
 
-        unlabeled = _preprocess_STL(unlabeled_x, 0, False, ndim, scale)
+        alldata = _preprocess_STL(unlabeled_x, 0, False, ndim, scale)
 
         np.save(All_DATA_PATH, unlabeled)
     else:
