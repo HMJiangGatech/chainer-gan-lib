@@ -39,15 +39,15 @@ python train.py --gpu 0 --algorithm stdgan --architecture sndcgan --out stlresul
 python train.py --gpu 0 --algorithm orthgan --architecture orthdcgan --out stlresult_orthgan --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 
 # MODE1 Spectrual Norm
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 1 --out stlresult_uvgan_mode1 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 1 --out stlresult_uvgan_mode1 --n_dis 1 --adam_alpha 0.0001 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE2 Spectrual Clipping
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 2 --out stlresult_uvgan_mode2 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 2 --out stlresult_uvgan_mode2 --n_dis 1 --adam_alpha 0.0001 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE3 Lipschitz Reg
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 3 --out stlresult_uvgan_mode3 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 3 --out stlresult_uvgan_mode3 --n_dis 1 --adam_alpha 0.0001 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE5 SC + Divergence Control
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 5 --out stlresult_uvgan_mode5 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 5 --out stlresult_uvgan_mode5 --n_dis 1 --adam_alpha 0.0001 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
 # MODE8 SN + Penalty Control
-python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 8 --out stlresult_uvgan_mode8 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10
+python train.py --gpu 0 --algorithm uvgan --architecture uvdcgan --udvmode 8 --out stlresult_uvgan_mode8 --n_dis 1 --adam_beta1 0.5 --adam_beta2 0.999 --dataset stl10 --max_iter 200000
 
 # Resnet
 

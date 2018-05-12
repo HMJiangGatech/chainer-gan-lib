@@ -113,23 +113,12 @@ def download_and_extract():
 def getSTL(withlabel=False, ndim=3, scale=1.):
     # download data if needed
     download_and_extract()
-    if not os.path.exists(All_DATA_PATH):
-        train_x = read_all_images(DATA_PATH)
-        train_y = read_labels(LABEL_PATH)
-        test_x = read_all_images(TEST_DATA_PATH)
-        test_y = read_labels(TEST_LABEL_PATH)
+    if not os.path.exists(All_DATA_PATH) or True:
         unlabeled_x = read_all_images(UNLABELED_DATA_PATH)
 
-        train = _preprocess_STL(train_x, train_y, withlabel,
-                                  ndim, scale)
-        test = _preprocess_STL(test_x, test_y, withlabel, ndim,
-                                 scale)
         unlabeled = _preprocess_STL(unlabeled_x, 0, False, ndim, scale)
 
-        print("concatenate image")
-        alldata = np.concatenate((train, test, unlabeled), axis=0)
-        print("save image")
-        np.save(All_DATA_PATH, alldata)
+        np.save(All_DATA_PATH, unlabeled)
     else:
         alldata = np.load(All_DATA_PATH)
 
