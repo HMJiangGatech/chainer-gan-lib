@@ -81,6 +81,7 @@ def read_all_images(path_to_data):
         # the size on its own.
 
         images = np.reshape(everything, (-1, 3, 96, 96))
+        images = np.transpose(images, (0, 1, 3, 2))
 
         # Now transpose the images into a standard image format
         # readable by, for example, matplotlib.imshow
@@ -113,11 +114,16 @@ def download_and_extract():
 def getSTL(withlabel=False, ndim=3, scale=1.):
     # download data if needed
     download_and_extract()
-    if not os.path.exists(All_DATA_PATH):
+    if not os.path.exists(All_DATA_PATH) or True:
         unlabeled_x = read_all_images(UNLABELED_DATA_PATH)
+        train_x = read_all_images(DATA_PATH)
+        test_x = read_all_images(TEST_DATA_PATH)
 
-        alldata = _preprocess_STL(unlabeled_x, 0, False, ndim, scale)
+        train = _preprocess_STL(train_x, 0, False, ndim, scale)
+        test = _preprocess_STL(test_x, 0, False, ndim, scale)
+        unlabeled = _preprocess_STL(unlabeled_x, 0, False, ndim, scale)
 
+        alldata = np.concatenate((train, test, unlabeled), axis=0)
         np.save(All_DATA_PATH, alldata)
     else:
         alldata = np.load(All_DATA_PATH)
