@@ -114,7 +114,7 @@ def download_and_extract():
 def getSTL(withlabel=False, ndim=3, scale=1.):
     # download data if needed
     download_and_extract()
-    if not os.path.exists(All_DATA_PATH) or True:
+    if not os.path.exists(All_DATA_PATH):
         unlabeled_x = read_all_images(UNLABELED_DATA_PATH)
         train_x = read_all_images(DATA_PATH)
         test_x = read_all_images(TEST_DATA_PATH)
